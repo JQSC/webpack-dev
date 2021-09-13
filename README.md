@@ -1,7 +1,7 @@
 # webpack-dev
 探索webpack最佳实践
 
-## 一、安装webpack和babel
+## 一、安装webpack5和babel7
 
 安装初始环境依赖
 
