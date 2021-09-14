@@ -197,8 +197,20 @@ css-minimizer-webpack-plugin
 
 ```jsx
 plugins: [
-	new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+	 new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
 ]
+//
+module: {
+	rules:[
+			{
+			    test: /\.css$/,
+			    use: [
+			        MiniCssExtractPlugin.loader,//style-loader
+			        'css-loader'
+			    ]
+			}
+	]
+}
 ```
 
 ### 使用基于cssnano的插件css-minimizer-webpack-plugin压缩css
@@ -246,7 +258,7 @@ PostCSS，将css转译成抽象语法树，作用类似于babel
 
 ## 五、优化打包时长
 
-### js 压缩
+### js 压缩优化
 
 webpack v5 开箱即带有最新版本的 terser-webpack-plugin。如果你使用的是 webpack v5 或更高版本，同时希望自定义配置，那么仍需要安装 terser-webpack-plugin
 
@@ -262,7 +274,9 @@ optimization: {
 }
 ```
 
-webpack引用的打包工具也是terser-webpack-plugin，但是奇怪的是当引用与默认打包插件terser-webpack-plugin相同，走默认打包配置的时候打包时间会明显减少。
+webpack使用的默认打包工具是terser，但是奇怪的是当引用插件terser-webpack-plugin，走默认打包配置的时候打包时间会明显减少。
+
+当使用esbuild将minify定义为TerserPlugin.esbuildMinify时，速度得到了极大的提升！(需要npm安装esbuild)
 
 打包时间：
 
@@ -271,7 +285,16 @@ webpack引用的打包工具也是terser-webpack-plugin，但是奇怪的是当�
 - 使用esbuild配置5200ms
 - uglify 时长不减反增
 
-### 使用esbuild-loader替换babel-loader
+esbuild存在的问题：
+
+- tree sharking是基于terser压缩工具的，一旦改为使用esbuild，则tree sharking失效导致包体积变大
+- 压缩效率比terser要差。
+
+### babel-loader优化
+
+编译期间大部分的耗时其实都来自babel-loader
+
+使用esbuild-loader替换babel-loader
 
 ```jsx
 loader: 'esbuild-loader',
@@ -281,6 +304,6 @@ options: {
 }
 ```
 
-打包时长：4560ms
+存在的问题：
 
-###
+- 没有提供AST的操作能力，所以一些处理AST的plugin无法使用（如 babel-plugin-import）
